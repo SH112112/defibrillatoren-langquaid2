@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8"/>
+<title>Defibrillatoren Markt Langquaid – Version 2.5 (fixierte Legende & Logo)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+<style>
+html, body { height:100%; margin:0; }
+#map { height:100%; width:100%; }
+
+.tooltip { font-size:14px; }
+
+.leaflet-popup-content img {
+  max-width:220px;
+  height:auto;
+  display:block;
+  cursor:pointer;
+}
+
+/* Fixierte Legende */
+.legend {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: white;
+  padding: 10px 12px;
+  border-radius: 6px;
+  box-shadow: 0 0 6px rgba(0,0,0,0.3);
+  font-size: 13px;
+  line-height: 1.4;
+  z-index: 1000;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+}
+.legend-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+.green { background:#34a853; }
+.orange { background:#f9ab00; }
+
+/* Fixiertes Logo rechts */
+.logo {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: white;
+  padding: 6px;
+  border-radius: 6px;
+  box-shadow: 0 0 6px rgba(0,0,0,0.3);
+  z-index: 1000;
+}
+.logo img {
+  max-width: 160px;
+}
+
+@media (max-width: 768px) {
+  .logo img { max-width: 120px; }
+  .legend { font-size: 14px; }
+}
+</style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<div class="logo">
+  <img src="assets/logo_markt_langquaid.jpg" alt="Markt Langquaid">
+</div>
+
+<div class="legend">
+  <strong>Legende</strong>
+  <div class="legend-item">
+    <div class="legend-dot green"></div> Defibrillator 24/7 erreichbar
+  </div>
+  <div class="legend-item">
+    <div class="legend-dot orange"></div> Defibrillator eingeschränkt verfügbar
+  </div>
+  <div style="font-size:12px;margin-top:4px;">
+    Details durch Antippen / Anklicken
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+var isMobile = window.innerWidth <= 768;
+
+var map = L.map('map', {
+  scrollWheelZoom: !isMobile
+}).setView([48.83, 12.05], isMobile ? 11 : 12);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap'
+}).addTo(map);
+
+var icon247 = new L.Icon({
+  iconUrl: 'https://maps.google.com/mapfiles/ms/icons/green-dot.png',
+  iconSize: isMobile ? [38,38] : [32,32],
+  iconAnchor: isMobile ? [19,38] : [16,32]
+});
+
+var iconLimited = new L.Icon({
+  iconUrl: 'https://maps.google.com/mapfiles/ms/icons/orange-dot.png',
+  iconSize: isMobile ? [38,38] : [32,32],
+  iconAnchor: isMobile ? [19,38] : [16,32]
+});
+
+var defis = [
+ {name:"Langquaid Feuerwehrhaus", addr:"Floriansplatz 1", lat:48.8315, lon:12.0500, status:"24/7", reason:"ständig zugänglich", slide:3},
+ {name:"Schulsportplatz Langquaid", addr:"Pestalozzistr. 8", lat:48.8266, lon:12.0493, status:"24/7", reason:"ständig zugänglich", slide:4},
+ {name:"Raiffeisenbank Langquaid", addr:"Rottenburgerstr. 1", lat:48.8206, lon:12.0507, status:"eingeschränkt", reason:"täglich 05–23 Uhr (Bankvorraum)", slide:5},
+ {name:"Pritsch GmbH & Co. KG", addr:"Rottenburgerstr. 1, Sandsbach", lat:48.8158, lon:12.0454, status:"24/7", reason:"außen montiert", slide:6},
+ {name:"Waldstadion Langquaid", addr:"Waldstadion 1", lat:48.8199, lon:12.0349, status:"eingeschränkt", reason:"nur bei Sportbetrieb", slide:7},
+ {name:"Niederleierndorf Freibad", addr:"Wiesenweg 2", lat:48.8260, lon:12.0811, status:"eingeschränkt", reason:"Sommerstandort – gleiches Gerät wie Sportheim", slide:8},
+ {name:"Niederleierndorf Sportheim (Winter)", addr:"Wiesenweg 2", lat:48.8260, lon:12.0811, status:"eingeschränkt", reason:"Winterstandort – gleiches Gerät wie Freibad", slide:9},
+ {name:"FF Niederleierndorf", addr:"Hauptstr. 10a", lat:48.8311, lon:12.0876, status:"24/7", reason:"außen zugänglich", slide:10},
+ {name:"FF Paring", addr:"Paring 242", lat:48.8528, lon:12.0892, status:"24/7", reason:"außen zugänglich", slide:11},
+ {name:"FF Schneidhart", addr:"Mitterschneidhart 14", lat:48.8563, lon:12.0433, status:"24/7", reason:"außen zugänglich", slide:12},
+ {name:"FF Leitenhausen", addr:"Leitenhausen 152", lat:48.7969, lon:12.0291, status:"24/7", reason:"außen zugänglich", slide:13},
+ {name:"FF Adlhausen", addr:"Langquaiderstr. 2a", lat:48.7858, lon:12.0149, status:"24/7", reason:"Vereinsstadl", slide:14},
+ {name:"Sportplatz Adlhausen", addr:"Flurstr. 14a", lat:48.7889, lon:12.0086, status:"eingeschränkt", reason:"nur bei Sportbetrieb", slide:15}
+];
+
+defis.forEach(function(d){
+  var icon = d.status==="24/7" ? icon247 : iconLimited;
+  var m = L.marker([d.lat, d.lon], {icon:icon}).addTo(map);
+
+  m.bindTooltip(
+    "<strong>"+d.name+"</strong><br>"+
+    d.addr+"<br>"+
+    "Verfügbarkeit: <strong>"+d.status+"</strong><br>"+
+    "<em>"+d.reason+"</em>",
+    {direction:"top", className:"tooltip"}
+  );
+
+  var img = "slides/folie_"+d.slide+".png";
+  m.bindPopup(
+    "<strong>"+d.name+"</strong><br><br>"+
+    "<img src='"+img+"' onclick=\"window.open('"+img+"','_blank')\">"+
+    "<div style='font-size:12px'>Antippen / Klicken = vergrößern</div>"
+  );
+});
+</script>
+</body>
+</html>
